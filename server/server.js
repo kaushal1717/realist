@@ -3,8 +3,9 @@ import morgan from 'morgan';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import { DATABASE } from './config.js';
-import authRoutes from './Routes/auth.js';
+import authRoutes from './Routes/routes.js';
 
+//port of localhost
 const port = 6969;
 
 //database
