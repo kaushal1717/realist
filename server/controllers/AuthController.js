@@ -12,6 +12,25 @@ export const welcome = (req,res) => {
     });
 };
 
+
+const tokenAndUserResponse = (res, user) => {
+    const token = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+      const refreshToken = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+  
+      user.password = undefined;
+      user.resetCode = undefined;
+  
+      return res.json({
+        token,
+        refreshToken,
+        user,
+      });
+}
+
 // send email for email validation afer clicking on activate account user account is created
 export const preRegister = async (req, res) => {
     try {
@@ -26,7 +45,7 @@ export const preRegister = async (req, res) => {
             return res.json({error: "Empty password"});
         }
         // validting if the password length is >= 8 char
-        if(password && password?.length < 6){
+        if(password && password?.length < 7){
             return res.json({error: "Password is too short"});
         }
         // validating if the user is already registered
@@ -69,6 +88,11 @@ export const register = async (req, res) => {
     // verify jwt in order to get the user information
     const { email, password } = jwt.verify(req.body.token, config.JWT_SECRET);
 
+    const userExist = await User.findOne({ email });
+    if (userExist) {
+        return res.json({error: "user already exists"});
+    }
+
     // hashing of password
     const hashedPassword = await hashPassword(password);
 
@@ -79,22 +103,8 @@ export const register = async (req, res) => {
       password: hashedPassword,
     }).save();
 
-    // create token
-    const token = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    const refreshToken = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    tokenAndUserResponse(res, user);
 
-    user.password = undefined;
-    user.resetCode = undefined;
-
-    return res.json({
-      token,
-      refreshToken,
-      user,
-    });
   } catch (err) {
     console.log(err);
     return res.json({ error: "Something went wrong. Try again." });
@@ -117,22 +127,8 @@ export const login = async (req, res) => {
         }
 
         // create the jwt tokens
-        const token = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
-            expiresIn: "1h",
-        });
-        const refreshToken = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
-            expiresIn: "7d",
-        });
+        tokenAndUserResponse(res, user);
 
-        // send the response
-        user.password = undefined;
-        user.resetCode = undefined;
-        
-        return res.json({
-            token,
-            refreshToken,
-            user,
-          });
     } catch (err) {
         console.log(err);
         return res.json({ error: "Something went wrong. Try again." });
@@ -186,30 +182,100 @@ export const forgotPassword = async (req, res) => {
     }
 }
 
+// Access your account without password
 export const accessAccount = async (req, res) => {
     try {
         const { resetCode } = jwt.verify(req.body.resetCode, config.JWT_SECRET);
 
         const user = await User.findOneAndUpdate({ resetCode },{resetCode: ''});
 
-        const token = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
-            expiresIn: "1h",
-        });
-        const refreshToken = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
-            expiresIn: "7d",
-        });
+        tokenAndUserResponse(res, user);
 
-        // send the response
-        user.password = undefined;
-        user.resetCode = undefined;
-        
-        return res.json({
-            token,
-            refreshToken,
-            user,
-          });
     } catch (err) {
         console.log(err);
         return res.json({ error: "Something went wrong. Try again." });
+    }
+}
+
+// to refresh the expired token
+export const refreshToken = async (req, res) => {
+    try {
+        const {_id} = jwt.verify(req.headers.refresh_token, config.JWT_SECRET);
+        
+        const user = await User.findById(_id);
+
+        tokenAndUserResponse(res, user);
+
+    } catch (err) {
+        console.log(err);
+        return res.status(403).json({error: "Refresh token failed."});
+    }
+}
+
+// To see the currently logged in users in mongoDB
+export const currentUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        user.password = undefined;
+        user.resetCode = undefined;
+        res.json(user);
+    } catch (err) {
+        console.log(err);
+        return res.status(403).json({error: "Unauthorized user"});
+    }
+}
+
+// To see the users profile
+export const publicProfile = async (req, res) => {
+    try {
+        const user = await User.findOne({username: req.params.username});
+        user.password = undefined;
+        user.resetCode = undefined;
+        res.json(user);
+    } catch (err) {
+        console.log(err);
+        return res.json({error: "User not found"});
+    }
+}
+
+// To change the password
+export const updatePassword = async (req, res) => {
+    try {
+        const {password} = req.body;
+
+        // Checking if the password is valid according to paramenters or not
+        if(!password) {
+            return res.json({error: "Empty password"});
+        }
+        if (password && password?.length < 8) {
+            return res.json({error: "Password is too short"});
+        }
+
+        // Will update your password in database
+        const user = await User.findByIdAndUpdate(req.user._id, {
+            password: await hashPassword(password),
+        });
+        
+        res.json({status: "Password updated successfully"});
+        res.json({user});
+    } catch (err) {
+        console.log(err);
+        return res.status(403).json({error: "Unauthorized user"});
+    }
+}
+
+// To update the profile
+export const updateProfile = async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.user._id,req.body,{new:true});
+        user.password = undefined;
+        user.resetCode = undefined;
+        res.json(user);
+    } catch (err) {
+        console.log(err);
+        if(err.codeName === "DuplicateKey"){
+            return res.json({error : "Username or email is already taken"});
+        }
+        
     }
 }
