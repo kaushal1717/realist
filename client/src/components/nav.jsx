@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom"
 import { Menu, X, User } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export const Logo = () => {
     return <div className="logo">
@@ -8,26 +8,26 @@ export const Logo = () => {
     </div>
 }
 
-const Navlinks = () => {
-    return (
-        <>
-            <NavLink to = "/" className={`nav-item`}> Home </NavLink>
-            <NavLink to ="/login" className={`nav-item`}> Login </NavLink>
-            <NavLink to ="/register" className={`nav-item`}> Register </NavLink>
-        </>
-    )
-}
+
 
 
 
 const Nav = () => {
     const [isOpen, setisOpen] = useState(false)
-    
 
     const toggleNavbar = () => {
         setisOpen(!isOpen)
     } 
-
+    
+    const Navlinks = () => {
+        return (
+            <>
+                <NavLink to = "/" className={`nav-item`}> Home </NavLink>
+                <NavLink to ="/login" className={`nav-item`}> Login </NavLink>
+                <NavLink to ="/register" className={`nav-item`}> Register </NavLink>
+            </>
+        )
+    }
     
 
     return (

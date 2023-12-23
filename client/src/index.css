@@ -4,7 +4,7 @@
 
 @layer components{
     .nav-item{
-        @apply duration-200 lg:border-0 lg:p-0 text-xl sm:mt-2 relative text-blue-900
+        @apply duration-200 lg:border-0 lg:p-0 text-xl sm:mt-2 text-blue-900 top-0 z-20 relative
     }
 
     .nav-item::after{
@@ -39,7 +39,16 @@
         @apply absolute top-[-0.5rem] content-[''] right-[1.75rem] w-4 h-4 bg-white transform rotate-45 border-t border-l border-gray-500
     }
 
-    .register-container{
-        @apply
+    .reg-form-container{
+        @apply max-w-[400px] w-full mx-auto bg-blue-900 p-8 px-8 rounded-lg shadow-gray-500 shadow-xl
     }
+
+    .form-label{
+        @apply flex flex-col text-gray-200 py-2
+    }
+
+    .input-field{
+        @apply rounded-lg bg-white mt-2 p-2 focus:border-blue-400 text-black 
+    }
+
 }
