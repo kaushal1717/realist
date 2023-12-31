@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 export const Logo = () => {
     return <div className="logo">
-        <img src="../URBANEST.svg" alt="logo"/>
+        <img src="/URBANEST.svg" alt="logo"/>
     </div>
 }
 
@@ -51,14 +51,7 @@ const Nav = () => {
                     </div>
                 )
             }
-            {/* {
-                openDropdown && (
-                    <div>
-                        <DropDownMenu />
-                    </div>
-                )
-            }     */}
-        </>  
+        </>   
     )
 }
 

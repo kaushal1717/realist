@@ -56,12 +56,15 @@ export const preRegister = async (req, res) => {
 
         // creating the jwt
         const token = jwt.sign({email, password}, config.JWT_SECRET, {expiresIn: "1h"});
+        console.log("token : ", token);
+        const newToken = btoa(token);
+        const url = `${config.CLIENT_URL}/auth/accountactivate/${newToken}`
 
         //sending the verification email
         config.AWSSES.sendEmail(welcomeTemplate(email, 
             `
                 <p> You are one step closer to register yourself. Please click the link given below to activate your account</p>
-                <a href="${config.CLIENT_URL}/auth/accountactivate/${token}">Activate your account</a>
+                <a href="${url}">Activate your account</a>
             `,
             config.REPLY_TO,
             "Account Activation"
@@ -86,7 +89,10 @@ export const register = async (req, res) => {
   try {
     // console.log(req.body);
     // verify jwt in order to get the user information
-    const { email, password } = jwt.verify(req.body.token, config.JWT_SECRET);
+
+    console.log(req.body.newToken);
+
+    const { email, password } = jwt.verify(req.body.newToken, config.JWT_SECRET);
 
     const userExist = await User.findOne({ email });
     if (userExist) {
