@@ -1,16 +1,13 @@
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { Menu, X, User } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useAuth } from "../context/auth"
 
 export const Logo = () => {
     return <div className="logo">
         <img src="/URBANEST.svg" alt="logo"/>
     </div>
 }
-
-
-
-
 
 const Nav = () => {
     const [isOpen, setisOpen] = useState(false)
@@ -59,8 +56,21 @@ const DropDown = () => {
 
     const [openDropdown, setopenDropdown] = useState(false)
 
+    //context
+    const {auth, setAuth} = useAuth();
+
+    //navigation
+    const navigate = useNavigate()
+
     const toggleDropDown = () => {
         setopenDropdown((prev) => !prev)
+    }
+
+    const LogOut = () => {
+        setAuth({user: null, token: "", refreshToken: ""});
+        localStorage.removeItem("auth");
+        navigate('/login');
+        
     }
 
     return(
@@ -73,7 +83,7 @@ const DropDown = () => {
                     <div className="dropdownmenu flex flex-col">
                         <ul className="flex flex-col gap-4">
                             <li onClick={toggleDropDown}> <NavLink to="/profile">Profile</NavLink> </li>
-                            <li onClick={toggleDropDown}><NavLink to="/logout" className={`text-red-600`}>Logout</NavLink></li>
+                            <li onClick={toggleDropDown}><div onClick={LogOut} className={`text-red-600 hover:cursor-pointer`}>Logout</div></li>
                         </ul>
                     </div>
                 )

@@ -8,7 +8,7 @@ function App() {
   return (
     <>
       <Header/>
-      <Toaster richColors position="top-right"/>
+      <Toaster richColors closeButton position="top-right"/>
       <Outlet />
     </>
   )

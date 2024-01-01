@@ -13,7 +13,7 @@ const AuthProvider = ({children}) => {
 
     useEffect(() => {
         let fromLS = localStorage.getItem("auth");
-        if(fromLS) setAuth(JSON.parse(fromLS));
+        if(fromLS)  setAuth(JSON.parse(fromLS));
     })
 
     // set global URL for axios
